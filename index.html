@@ -1,0 +1,3380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Sistema de Vouchers para Agência de Viagens">
+    <!-- PWA Meta Tags -->
+    <link rel="icon" type="image/svg+xml" sizes="192x192" href="icon-192.svg">
+    <link rel="icon" type="image/svg+xml" sizes="512x512" href="icon-512.svg">
+    <link rel="apple-touch-icon" href="icon-192.svg">
+    <title>Sistema de Vouchers - Agência de Viagens</title>
+
+    <!-- Font Awesome para icones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Reset e Base Styles */
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --text-primary: #1f2937;
+            --text-secondary: #374151;
+            --border-color: #e2e8f0;
+            --primary-color: #4f46e5;
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.7;
+            color: #374151;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            min-height: 100vh;
+            font-weight: 400;
+            font-size: 16px;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: #1f2937;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(99, 102, 241, 0.2);
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* App Container */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .app-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .app-header h1 {
+            color: #1f2937;
+            font-size: 1.875rem;
+            font-weight: 700;
+            text-shadow: none;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.025em;
+        }
+
+        .app-header h1 i {
+            margin-right: 0.5rem;
+        }
+
+        .config-btn {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border: none;
+            padding: 0.875rem;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .config-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Screen Base Styles */
+        .screen {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            backdrop-filter: blur(20px);
+            overflow: hidden;
+            animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .screen-header {
+            background: linear-gradient(135deg, #6366f1, #4f46e5, #7c3aed);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-shadow: none;
+            letter-spacing: -0.025em;
+        }
+
+        .screen-header h2 i {
+            margin-right: 0.5rem;
+        }
+
+        .screen-header p {
+            opacity: 0.9;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Back Button */
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-2px);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem;
+            text-transform: none;
+            letter-spacing: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5, #3730a3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: white;
+            box-shadow: 0 4px 15px rgba(100, 116, 139, 0.25);
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #475569, #334155);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(100, 116, 139, 0.35);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.25);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.35);
+        }
+
+        /* Seção de navegação */
+        .navigation-section {
+            margin-top: 3rem;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            min-width: 200px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .navigation-help {
+            margin-top: 1.25rem;
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        /* Forms */
+        .config-form,
+        .voucher-form {
+            padding: 2rem;
+        }
+
+        /* Agencies Management */
+        .agencies-list-section {
+            margin-bottom: 2.5rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .agencies-list-section h3 {
+            color: #1f2937;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-transform: none;
+            letter-spacing: -0.025em;
+        }
+
+        .agencies-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .agency-item {
+            background: rgba(248, 250, 252, 0.8);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            gap: 0;
+        }
+
+        .agency-item:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: #c7d2fe;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.1);
+        }
+
+        .agency-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        .agency-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .agency-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #374151;
+        }
+
+        .agency-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 8px;
+        }
+
+        .templates-list {
+            border-top: 1px solid #e2e8f0;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background: #fdfdff;
+        }
+
+        .template-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .template-item:last-child {
+            border-bottom: none;
+        }
+
+        .template-name {
+            font-size: 0.9rem;
+            color: #475569;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .template-name .fa-file-pdf {
+            color: #dc2626;
+        }
+
+        .remove-template-btn {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .remove-template-btn:hover {
+            background-color: #fee2e2;
+        }
+
+        .add-agency-section {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .add-agency-section h3 {
+            color: #1f2937;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .empty-agencies {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        /* Seções de formulário */
+        .form-section {
+            margin-bottom: 2.5rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-section:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .form-section h3 {
+            margin: 0 0 1.5rem 0;
+            color: #1f2937;
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-transform: none;
+            letter-spacing: -0.025em;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.875rem;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid rgba(209, 213, 219, 0.8);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.9);
+            color: #374151;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.25em;
+            padding-right: 3rem;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .file-input {
+            padding: 0.5rem;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input:hover {
+            border-color: #6366f1;
+            background: #eff6ff;
+        }
+
+        .template-status {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .template-status.loading {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+
+        .template-status.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .template-status.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .form-help {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .total-field {
+            background: #f3f4f6 !important;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        /* Destinations */
+        .destination-header {
+            display: grid;
+            grid-template-columns: 2fr 150px 120px 40px;
+            gap: 1rem;
+            align-items: center;
+            padding: 0 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .destinations-container {
+            margin-bottom: 1rem;
+        }
+
+        .destination-row {
+            display: grid;
+            grid-template-columns: 2fr 150px 120px 40px;
+            gap: 1rem;
+            align-items: end;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+        }
+
+        .destination-row .form-group {
+            margin-bottom: 0;
+        }
+
+        .remove-destination-btn {
+            background: #fecaca;
+            color: #dc2626;
+            border: none;
+            min-width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-destination-btn:hover {
+            background-color: #dc2626;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* Passengers */
+        .passengers-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .passenger-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .passenger-row label {
+            min-width: 60px;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 0;
+        }
+
+        .passenger-row input {
+            flex: 1;
+        }
+
+        .remove-passenger-btn {
+            min-width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .remove-passenger-btn:hover {
+            background-color: #dc2626;
+            transform: scale(1.05);
+        }
+
+        /* Vouchers List */
+        .vouchers-list-container {
+            padding: 2rem;
+        }
+
+        .voucher-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .voucher-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #c7d2fe;
+        }
+
+        .voucher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .voucher-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #3730a3;
+            margin-bottom: 0.25rem;
+        }
+
+        .voucher-date {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .voucher-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .voucher-actions .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .voucher-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .voucher-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .voucher-info-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .voucher-info-value {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            color: #9ca3af;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 2rem;
+        }
+
+        /* Autocomplete */
+        .autocomplete-suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .autocomplete-suggestion {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+
+        .autocomplete-suggestion:hover,
+        .autocomplete-suggestion.selected {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .autocomplete-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .autocomplete-suggestions {
+                max-height: 250px;
+                border-radius: 8px;
+                left: 0 !important;
+                right: 0 !important;
+                width: auto !important;
+            }
+
+            .autocomplete-suggestion {
+                padding: 1rem;
+                min-height: 48px;
+                font-size: 16px;
+            }
+        }
+
+        /* Phone Input Styles */
+        .passenger-phones-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            align-items: flex-start;
+            margin-top: 1.5rem;
+        }
+
+        .passenger-phone-unit {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: stretch;
+            position: relative;
+            width: 100%;
+        }
+
+        .country-input-container {
+            position: relative;
+            display: flex;
+            min-width: 120px;
+            max-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .country-input {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            color: #374151;
+            cursor: text;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+            font-weight: 500;
+        }
+
+        .country-dropdown {
+            position: absolute;
+            top: 105%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            .country-dropdown {
+                max-height: 300px;
+                border-radius: 8px;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        .country-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .country-dropdown::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .country-dropdown::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+            transition: background-color 0.2s ease;
+        }
+
+        .country-dropdown::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .country-dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .country-dropdown-item:hover {
+            background-color: #eff6ff;
+        }
+
+        .country-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .country-name {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .country-code {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .country-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .phone-input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .phone-input.valid {
+            border-color: #10b981;
+        }
+
+        .phone-input.warning {
+            border-color: #f59e0b;
+        }
+
+        .phone-input.error {
+            border-color: #ef4444;
+        }
+
+        /* Contractor Header Styles */
+        .contractor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .contractor-header h3 {
+            margin: 0;
+        }
+
+        .contractor-fields {
+            transition: all 0.5s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+
+        .contractor-fields.show {
+            max-height: 1000px;
+            /* Adjust as needed */
+            opacity: 1;
+        }
+
+        #toggle-contractor-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        #toggle-contractor-btn:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 1.25em;
+            height: 1.25em;
+            cursor: pointer;
+        }
+
+        /* Message/Toast Notification */
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 300px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        .message-success {
+            background: #10b981;
+        }
+
+        .message-error {
+            background: #ef4444;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .destination-header {
+                display: none;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+
+            .header-content {
+                padding: 1rem 1.5rem;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+                text-align: left;
+                flex-wrap: wrap;
+            }
+
+            .app-header h1 {
+                font-size: 1.4rem;
+                flex: 1;
+                min-width: 200px;
+            }
+
+            .config-btn {
+                padding: 0.75rem;
+                min-width: 44px;
+                min-height: 44px;
+                flex-shrink: 0;
+            }
+
+            .screen {
+                border-radius: 16px;
+                margin: 0;
+            }
+
+            .screen-header {
+                padding: 1.5rem;
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            .config-form,
+            .voucher-form {
+                padding: 1.5rem;
+            }
+
+            .form-section {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .destination-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1.25rem;
+            }
+
+            .passenger-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                padding: 1.25rem;
+            }
+
+            .passenger-row label {
+                min-width: auto;
+                text-align: left;
+                font-size: 0.9rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .phone-input-group {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .country-input-container {
+                width: 100%;
+                max-width: 160px;
+            }
+
+            .passenger-phones-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .voucher-info {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                padding: 1.25rem;
+            }
+
+            .agencies-list {
+                gap: 1rem;
+            }
+
+            .agency-item {
+                margin-bottom: 1rem;
+            }
+
+            .agency-item-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                padding: 1.25rem;
+            }
+
+            .agency-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .templates-list {
+                padding: 1rem 1.25rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .template-item {
+                padding: 1rem 0;
+                min-width: 280px;
+            }
+
+            .voucher-item {
+                padding: 1.25rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .voucher-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .voucher-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .navigation-section {
+                padding: 1.5rem;
+                margin-top: 2rem;
+            }
+
+            .btn-large {
+                width: 100%;
+                padding: 1.25rem 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.5rem;
+            }
+
+            .header-content {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .app-header h1 {
+                font-size: 1.25rem;
+            }
+
+            .btn {
+                padding: 1rem 1.5rem;
+                font-size: 0.9rem;
+                min-height: 48px;
+                min-width: 120px;
+                border-radius: 8px;
+            }
+
+            .btn-small {
+                padding: 0.75rem 1rem;
+                font-size: 0.85rem;
+                min-height: 44px;
+                min-width: 100px;
+            }
+
+            .back-btn {
+                min-width: 48px;
+                min-height: 48px;
+                padding: 1rem;
+            }
+
+            .config-btn {
+                min-width: 48px;
+                min-height: 48px;
+            }
+
+            .config-form,
+            .voucher-form,
+            .form-section {
+                padding: 1rem;
+            }
+
+            .screen-header {
+                padding: 1rem;
+            }
+
+            .screen-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .form-input,
+            .form-textarea,
+            .form-select {
+                padding: 1rem;
+                font-size: 16px !important;
+                /* Evita zoom no iOS */
+                min-height: 48px;
+                border-radius: 8px;
+            }
+
+            .form-textarea {
+                min-height: 120px;
+                padding: 1rem;
+            }
+
+            .phone-input {
+                font-size: 16px !important;
+                /* Evita zoom no iOS */
+                min-height: 48px;
+                padding: 1rem;
+            }
+
+            .country-input {
+                font-size: 16px !important;
+                /* Evita zoom no iOS */
+                padding: 1rem 0.75rem;
+                min-height: 48px;
+            }
+
+            .form-select {
+                padding-right: 3rem;
+                background-size: 1.5em;
+                background-position: right 1rem center;
+            }
+
+            .passenger-row {
+                padding: 0.75rem;
+            }
+
+            .destination-row {
+                padding: 0.75rem;
+                grid-template-columns: 1fr 100px 80px 40px;
+            }
+
+            .remove-passenger-btn,
+            .remove-destination-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+
+            .navigation-section {
+                padding: 1rem;
+            }
+
+            .voucher-item {
+                padding: 1rem;
+            }
+
+            .voucher-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .voucher-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Media query para telas muito pequenas */
+        @media (max-width: 480px) {
+            .destination-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .destination-row .form-group {
+                margin-bottom: 0.75rem;
+            }
+
+            .remove-destination-btn {
+                justify-self: center;
+                margin-top: 0.5rem;
+            }
+        }
+
+        /* Melhorias específicas para touch */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 48px;
+                padding: 1rem 1.5rem;
+                touch-action: manipulation;
+            }
+
+            .form-input,
+            .form-select,
+            .form-textarea {
+                min-height: 48px;
+                touch-action: manipulation;
+            }
+
+            .country-dropdown-item {
+                min-height: 48px;
+                padding: 1rem;
+                touch-action: manipulation;
+            }
+
+            .remove-passenger-btn,
+            .remove-destination-btn {
+                min-width: 48px;
+                min-height: 48px;
+                touch-action: manipulation;
+            }
+        }
+
+        /* Melhorias específicas para iOS */
+        @supports (-webkit-touch-callout: none) {
+            .form-input,
+            .form-select,
+            .form-textarea,
+            .phone-input,
+            .country-input {
+                font-size: 16px !important;
+                -webkit-appearance: none;
+                border-radius: 8px;
+            }
+
+            .form-select {
+                -webkit-appearance: none;
+                appearance: none;
+            }
+
+            body {
+                -webkit-text-size-adjust: 100%;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            .screen,
+            .form-section {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* Prevenção de zoom em dispositivos móveis */
+        @media screen and (max-width: 768px) {
+            input[type="text"],
+            input[type="email"],
+            input[type="tel"],
+            input[type="number"],
+            input[type="date"],
+            select,
+            textarea {
+                font-size: 16px !important;
+                transform: translateZ(0);
+            }
+        }
+
+        /* Personalização de placeholders para campos de data e hora */
+        input[type="date"]:not(:focus):not(:valid) {
+            color: transparent;
+        }
+        
+        input[type="date"]:not(:focus):not(:valid):before {
+            content: "Data";
+            color: #9ca3af;
+            position: absolute;
+        }
+        
+        input[type="time"]:not(:focus):not(:valid) {
+            color: transparent;
+        }
+        
+        input[type="time"]:not(:focus):not(:valid):before {
+            content: "Horário";
+            color: #9ca3af;
+            position: absolute;
+        }
+        
+        /* Fallback usando JavaScript para melhor compatibilidade */
+        input[type="date"].empty-placeholder,
+        input[type="time"].empty-placeholder {
+            color: #9ca3af !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p>Carregando Sistema de Vouchers...</p>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="app-container" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1><i class="fas fa-plane"></i> Sistema de Vouchers</h1>
+                <button id="config-btn" class="config-btn" title="Configurações da Agência">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tela de Configuração Inicial -->
+            <section id="config-screen" class="screen config-screen" style="display: none;">
+                <div class="screen-header">
+                    <div>
+                        <h2><i class="fas fa-building"></i> Gerenciamento de Agências</h2>
+                        <p>Configure suas agências e seus respectivos templates PDF.</p>
+                    </div>
+                </div>
+
+                <div class="config-form">
+                    <!-- Lista de Agências Cadastradas -->
+                    <div class="agencies-list-section">
+                        <h3><i class="fas fa-list"></i> Agências Cadastradas</h3>
+                        <div id="agencies-list" class="agencies-list">
+                            <!-- Agências serão carregadas aqui dinamicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Formulário para Adicionar Nova Agência -->
+                    <div class="add-agency-section">
+                        <h3><i class="fas fa-plus-circle"></i> Adicionar Template</h3>
+                        <form id="agency-config-form">
+                            <div class="form-group">
+                                <label for="agency-select-for-template">Para a Agência *</label>
+                                <select id="agency-select-for-template" class="form-select" required>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group" id="new-agency-name-group" style="display: none;">
+                                <label for="new-agency-name">Nome da Nova Agência *</label>
+                                <input type="text" id="new-agency-name" class="form-input" placeholder="Digite o nome da nova agência">
+                            </div>
+                            <div class="form-group">
+                                <label for="pdf-template">Arquivo do Template PDF *</label>
+                                <input type="file" id="pdf-template" accept=".pdf" class="file-input" required>
+                                <div id="pdf-template-status" class="template-status"></div>
+                                <small class="form-help">Selecione o arquivo PDF que servirá de modelo.</small>
+                            </div>
+                            <div class="form-actions" style="justify-content: flex-start; border: none; padding-top: 1rem; margin-top: 0;">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Salvar Template
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Botão para ir para os vouchers -->
+                    <div class="navigation-section">
+                        <button id="go-to-vouchers-btn" class="btn btn-success btn-large">
+                            <i class="fas fa-arrow-right"></i> Continuar para Vouchers
+                        </button>
+                        <p class="navigation-help">Após configurar pelo menos uma agência, você pode começar a criar vouchers.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tela Principal Lista de Vouchers -->
+            <section id="vouchers-list-screen" class="screen vouchers-list-screen">
+                <div class="screen-header">
+                    <h2><i class="fas fa-ticket-alt"></i> Meus Vouchers</h2>
+                    <button id="new-voucher-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Novo Voucher
+                    </button>
+                </div>
+                <div class="vouchers-list-container">
+                    <div id="vouchers-list" class="vouchers-list">
+                        <!-- Lista de vouchers será carregada aqui -->
+                    </div>
+                    <div id="empty-state" class="empty-state" style="display: none;">
+                        <i class="fas fa-ticket-alt"></i>
+                        <h3>Nenhum voucher criado ainda</h3>
+                        <p>Clique em "Novo Voucher" para começar.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tela de Criação/Edição de Voucher -->
+            <section id="voucher-form-screen" class="screen voucher-form-screen" style="display: none;">
+                <div class="screen-header">
+                    <button id="back-to-list-btn" class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 id="voucher-form-title"><i class="fas fa-plus"></i> Novo Voucher</h2>
+                    <div></div> <!-- Spacer -->
+                </div>
+
+                <form id="voucher-form" class="voucher-form">
+                    <!-- Seção 0: Seleção de Agência e Template -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-building"></i> Agência e Template</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="selected-agency">Selecione a Agência *</label>
+                                <select id="selected-agency" class="form-select" required>
+                                    <option value="">Selecione uma agência...</option>
+                                    <!-- Opções serão carregadas dinamicamente -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="selected-template">Selecione o Template *</label>
+                                <select id="selected-template" class="form-select" required>
+                                    <option value="">Primeiro selecione uma agência...</option>
+                                    <!-- Opções serão carregadas dinamicamente -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção 1: Destinos -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-map-marker-alt"></i> Roteiro</h3>
+                        <div class="destination-header">
+                            <label>Destino</label>
+                            <label>Data</label>
+                            <label>Horário</label>
+                        </div>
+                        <div id="destinations-container" class="destinations-container">
+                            <!-- Destinos serão adicionados dinamicamente aqui -->
+                        </div>
+                        <button type="button" id="add-destination-btn" class="btn btn-secondary" style="margin-top: 1rem;">
+                            <i class="fas fa-plus"></i> Adicionar Destino
+                        </button>
+                    </div>
+
+                    <!-- Seção 2: Embarque e Passageiros -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-users"></i> Dados da Viagem</h3>
+                        <div class="form-group">
+                            <label for="local_embarque">Local de Embarque</label>
+                            <input type="text" id="local_embarque" class="form-input autocomplete-input" data-field="local_embarque">
+                        </div>
+
+                        <h4>Lista de Passageiros</h4>
+                        <div id="passengers-container" class="passengers-container">
+                            <!-- Passageiros serão adicionados dinamicamente aqui -->
+                        </div>
+                        <button type="button" id="add-passenger-btn" class="btn btn-secondary">
+                            <i class="fas fa-plus"></i> Adicionar Passageiro
+                        </button>
+
+                        <h4 style="margin-top: 1.5rem;">Contato dos Passageiros</h4>
+                        <!-- Telefones dos Passageiros -->
+                        <div class="passenger-phones-container">
+                            <!-- JS vai gerar os campos aqui para contato_01 e contato_02 -->
+                        </div>
+                    </div>
+
+                    <!-- Seção 3: Quantidade de Passageiros -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-calculator"></i> Quantitativos</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="qt_adulto">Adultos</label>
+                                <input type="number" id="qt_adulto" min="0" value="0" class="form-input passenger-count">
+                            </div>
+                            <div class="form-group">
+                                <label for="qt_crianca">Crianças (4-9 anos)</label>
+                                <input type="number" id="qt_crianca" min="0" value="0" class="form-input passenger-count">
+                            </div>
+                            <div class="form-group">
+                                <label for="qt_colo">Colos</label>
+                                <input type="number" id="qt_colo" min="0" value="0" class="form-input passenger-count">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label for="total_passageiros">Total de Passageiros</label>
+                            <input type="number" id="total_passageiros" readonly class="form-input total-field">
+                        </div>
+                    </div>
+
+                    <!-- Seção 4: Financeiro e Observações -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-dollar-sign"></i> Financeiro e Observações</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="total_a_pagar">Total a Pagar (R$)</label>
+                                <input type="number" id="total_a_pagar" step="0.01" min="0" class="form-input money-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="pre_reserva">Pré-Reserva (R$)</label>
+                                <input type="number" id="pre_reserva" step="0.01" min="0" class="form-input money-input">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="falta_pagar">Falta Pagar (R$)</label>
+                            <input type="number" id="falta_pagar" readonly step="0.01" class="form-input total-field">
+                        </div>
+                        <div class="form-group">
+                            <label for="observacao">Observações</label>
+                            <textarea id="observacao" class="form-textarea autocomplete-input" data-field="observacao" rows="4" maxlength="600"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Seção 5: Dados do Contratante -->
+                    <div class="form-section">
+                        <div class="contractor-header">
+                            <h3><i class="fas fa-user-tie"></i> Dados do Contratante</h3>
+                            <button type="button" id="toggle-contractor-btn" class="btn btn-secondary">Mostrar Campos</button>
+                        </div>
+                        <div id="contractor-fields" class="contractor-fields">
+                            <div class="form-group" style="margin-top: 1.5rem;">
+                                <h4>Exibir no Contrato PDF</h4>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" id="include-contractor-date" checked> Data do Contrato</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="include-contractor-name" checked> Nome</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="include-contractor-email" checked> E-mail</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="include-contractor-contact" checked> Contato</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="data_contrato">Data do Contrato</label>
+                                <input type="date" id="data_contrato" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="nome_contratante">Nome do Contratante</label>
+                                <input type="text" id="nome_contratante" class="form-input autocomplete-input" data-field="nome_contratante">
+                            </div>
+                            <div class="form-group">
+                                <label for="contato_contratante">Contato do Contratante</label>
+                                <div class="phone-input-group">
+                                    <input type="tel" id="contato_contratante" class="form-input phone-input autocomplete-input" data-field="contato_contratante" placeholder="(00) 00000-0000">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="email_contratante">Email do Contratante</label>
+                                <input type="email" id="email_contratante" class="form-input autocomplete-input" data-field="email_contratante">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ações de Formulário -->
+                    <div class="form-actions">
+                        <button type="button" id="preview-pdf-btn" class="btn btn-secondary">
+                            <i class="fas fa-eye"></i> Visualizar PDF
+                        </button>
+                        <button type="button" id="save-voucher-btn" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Voucher
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- Autocomplete Suggestions -->
+    <div id="autocomplete-suggestions" class="autocomplete-suggestions"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/libphonenumber-js@1.11.4/bundle/libphonenumber-js.min.js"></script>
+
+    <script>
+        // Dados dos países, que estariam em 'countries_data.js'
+        window.COUNTRIES_DATA = [
+            // América do Sul
+            { code: 'BR', name: 'Brasil', dialCode: '55' },
+            { code: 'AR', name: 'Argentina', dialCode: '54' },
+            { code: 'PY', name: 'Paraguai', dialCode: '595' },
+            { code: 'UY', name: 'Uruguai', dialCode: '598' },
+            { code: 'CL', name: 'Chile', dialCode: '56' },
+            { code: 'PE', name: 'Peru', dialCode: '51' },
+            { code: 'BO', name: 'Bolívia', dialCode: '591' },
+            { code: 'CO', name: 'Colômbia', dialCode: '57' },
+            { code: 'VE', name: 'Venezuela', dialCode: '58' },
+            { code: 'EC', name: 'Equador', dialCode: '593' },
+            { code: 'GY', name: 'Guiana', dialCode: '592' },
+            { code: 'SR', name: 'Suriname', dialCode: '597' },
+            { code: 'GF', name: 'Guiana Francesa', dialCode: '594' },
+
+            // América do Norte
+            { code: 'US', name: 'Estados Unidos', dialCode: '1' },
+            { code: 'CA', name: 'Canadá', dialCode: '1' },
+            { code: 'MX', name: 'México', dialCode: '52' },
+
+            // América Central e Caribe
+            { code: 'GT', name: 'Guatemala', dialCode: '502' },
+            { code: 'BZ', name: 'Belize', dialCode: '501' },
+            { code: 'SV', name: 'El Salvador', dialCode: '503' },
+            { code: 'HN', name: 'Honduras', dialCode: '504' },
+            { code: 'NI', name: 'Nicarágua', dialCode: '505' },
+            { code: 'CR', name: 'Costa Rica', dialCode: '506' },
+            { code: 'PA', name: 'Panamá', dialCode: '507' },
+            { code: 'CU', name: 'Cuba', dialCode: '53' },
+            { code: 'JM', name: 'Jamaica', dialCode: '1876' },
+            { code: 'HT', name: 'Haiti', dialCode: '509' },
+            { code: 'DO', name: 'República Dominicana', dialCode: '1809' },
+
+            // Europa
+            { code: 'PT', name: 'Portugal', dialCode: '351' },
+            { code: 'ES', name: 'Espanha', dialCode: '34' },
+            { code: 'FR', name: 'França', dialCode: '33' },
+            { code: 'IT', name: 'Itália', dialCode: '39' },
+            { code: 'DE', name: 'Alemanha', dialCode: '49' },
+            { code: 'GB', name: 'Reino Unido', dialCode: '44' },
+            { code: 'IE', name: 'Irlanda', dialCode: '353' },
+            { code: 'NL', name: 'Holanda', dialCode: '31' },
+            { code: 'BE', name: 'Bélgica', dialCode: '32' },
+            { code: 'CH', name: 'Suíça', dialCode: '41' },
+            { code: 'AT', name: 'Áustria', dialCode: '43' },
+            { code: 'SE', name: 'Suécia', dialCode: '46' },
+            { code: 'NO', name: 'Noruega', dialCode: '47' },
+            { code: 'DK', name: 'Dinamarca', dialCode: '45' },
+            { code: 'FI', name: 'Finlândia', dialCode: '358' },
+            { code: 'IS', name: 'Islândia', dialCode: '354' },
+            { code: 'PL', name: 'Polônia', dialCode: '48' },
+            { code: 'CZ', name: 'República Tcheca', dialCode: '420' },
+            { code: 'SK', name: 'Eslováquia', dialCode: '421' },
+            { code: 'HU', name: 'Hungria', dialCode: '36' },
+            { code: 'RO', name: 'Romênia', dialCode: '40' },
+            { code: 'BG', name: 'Bulgária', dialCode: '359' },
+            { code: 'HR', name: 'Croácia', dialCode: '385' },
+            { code: 'SI', name: 'Eslovênia', dialCode: '386' },
+            { code: 'GR', name: 'Grécia', dialCode: '30' },
+            { code: 'TR', name: 'Turquia', dialCode: '90' },
+            { code: 'RU', name: 'Rússia', dialCode: '7' },
+            { code: 'UA', name: 'Ucrânia', dialCode: '380' },
+
+            // Ásia
+            { code: 'JP', name: 'Japão', dialCode: '81' },
+            { code: 'CN', name: 'China', dialCode: '86' },
+            { code: 'KR', name: 'Coreia do Sul', dialCode: '82' },
+            { code: 'IN', name: 'Índia', dialCode: '91' },
+            { code: 'TH', name: 'Tailândia', dialCode: '66' },
+            { code: 'VN', name: 'Vietnã', dialCode: '84' },
+            { code: 'PH', name: 'Filipinas', dialCode: '63' },
+            { code: 'MY', name: 'Malásia', dialCode: '60' },
+            { code: 'SG', name: 'Singapura', dialCode: '65' },
+            { code: 'ID', name: 'Indonésia', dialCode: '62' },
+            { code: 'IL', name: 'Israel', dialCode: '972' },
+            { code: 'AE', name: 'Emirados Árabes Unidos', dialCode: '971' },
+            { code: 'SA', name: 'Arábia Saudita', dialCode: '966' },
+
+            // África
+            { code: 'ZA', name: 'África do Sul', dialCode: '27' },
+            { code: 'EG', name: 'Egito', dialCode: '20' },
+            { code: 'MA', name: 'Marrocos', dialCode: '212' },
+            { code: 'NG', name: 'Nigéria', dialCode: '234' },
+            { code: 'KE', name: 'Quênia', dialCode: '254' },
+            { code: 'GH', name: 'Gana', dialCode: '233' },
+
+            // Oceania
+            { code: 'AU', name: 'Austrália', dialCode: '61' },
+            { code: 'NZ', name: 'Nova Zelândia', dialCode: '64' },
+            { code: 'FJ', name: 'Fiji', dialCode: '679' }
+        ];
+    </script>
+
+    <script>
+        // Conteúdo do arquivo app.js
+        class VoucherSystem {
+            constructor() {
+                this.editingVoucherId = null;
+                this.autocompleteData = this.loadAutocompleteData();
+                this.countriesData = this.getCountriesData();
+                this.init();
+            }
+
+            getCountriesData() {
+                return window.COUNTRIES_DATA || [{
+                    code: 'BR',
+                    name: 'Brasil',
+                    dialCode: '55'
+                }];
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadApp();
+                this.setupAutocomplete();
+                this.setupFormCalculations();
+            }
+
+            // NEW HELPERS for phone numbers
+            getCombinedPhoneNumber(inputId) {
+                const phoneInput = document.getElementById(inputId);
+                if (!phoneInput) return '';
+                const group = phoneInput.closest('.phone-input-group');
+                const countryInput = group ? group.querySelector('.country-input') : null;
+                if (countryInput && phoneInput.value) {
+                    return `${countryInput.value} ${phoneInput.value}`.trim();
+                }
+                return phoneInput.value;
+            }
+
+            parsePhoneNumber(fullNumber) {
+                if (!fullNumber || typeof fullNumber !== 'string') {
+                    return { ddi: '+55', number: '' };
+                }
+                const trimmed = fullNumber.trim();
+                const parts = trimmed.split(' ');
+                // If it's just a DDI (e.g., '+55' or '+55 '), number should be empty
+                if (parts.length === 1 && parts[0].startsWith('+')) {
+                    return { ddi: parts[0], number: '' };
+                }
+                if (parts.length > 1 && parts[0].startsWith('+')) {
+                    const ddi = parts[0];
+                    const number = parts.slice(1).join(' ');
+                    return { ddi, number };
+                }
+                return { ddi: '+55', number: fullNumber };
+            }
+
+            populatePhoneField(inputId, fullNumber) {
+                const phoneInput = document.getElementById(inputId);
+                if (!phoneInput) return;
+
+                const { ddi, number } = this.parsePhoneNumber(fullNumber);
+
+                phoneInput.value = number;
+                const group = phoneInput.closest('.phone-input-group');
+                const countryInput = group.querySelector('.country-input');
+
+                if (countryInput) {
+                    countryInput.value = ddi || '+55';
+                    const country = this.countriesData.find(c => `+${c.dialCode}` === countryInput.value) || this.countriesData.find(c => c.code === 'BR');
+                    if (country) {
+                        countryInput.setAttribute('data-country-code', country.code);
+                        this.setupPhoneInputForCountry(phoneInput, country.code);
+                    }
+                }
+            }
+
+
+            loadApp() {
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('app').style.display = 'flex';
+                    this.showVouchersListScreen();
+                }, 1500);
+            }
+
+            setupEventListeners() {
+                document.getElementById('config-btn').addEventListener('click', () => this.showConfigScreen());
+                document.getElementById('new-voucher-btn').addEventListener('click', () => this.showVoucherFormScreen());
+                document.getElementById('back-to-list-btn').addEventListener('click', () => this.showVouchersListScreen());
+                document.getElementById('go-to-vouchers-btn').addEventListener('click', () => {
+                    const agencies = this.getAllAgencies();
+                    if (agencies.length === 0) {
+                        this.showErrorMessage('Configure pelo menos uma agência antes de continuar.');
+                        return;
+                    }
+                    this.showVouchersListScreen();
+                });
+                document.getElementById('agency-config-form').addEventListener('submit', this.saveAgencyConfig.bind(this));
+                document.getElementById('pdf-template').addEventListener('change', (e) => this.handlePDFTemplateUpload(e));
+                document.getElementById('selected-agency').addEventListener('change', (e) => this.loadTemplatesForAgency(e.target.value));
+                document.getElementById('selected-template').addEventListener('change', (e) => this.selectTemplate(e.target.value));
+                document.getElementById('toggle-contractor-btn').addEventListener('click', () => this.toggleContractorFields());
+                document.getElementById('save-voucher-btn').addEventListener('click', () => this.saveVoucher());
+                document.getElementById('preview-pdf-btn').addEventListener('click', () => this.generatePDF());
+                document.getElementById('add-destination-btn').addEventListener('click', () => this.addDestination());
+                document.getElementById('add-passenger-btn').addEventListener('click', () => this.addPassenger());
+                document.querySelectorAll('.passenger-count').forEach(input => {
+                    input.addEventListener('input', () => this.calculateTotalPassengers());
+                });
+                document.querySelectorAll('.money-input').forEach(input => {
+                    input.addEventListener('input', () => this.calculateRemainingAmount());
+                });
+                document.getElementById('observacao').addEventListener('input', this.handleObservacaoInput.bind(this));
+                const today = new Date();
+                const todayISO = today.getFullYear() + '-' +
+                    String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(today.getDate()).padStart(2, '0');
+                document.getElementById('data_contrato').value = todayISO;
+            }
+
+            handleObservacaoInput(e) {
+                const textarea = e.target;
+                const maxCharsPerLine = 120;
+                
+                // A propriedade maxlength="600" já cuida do limite total.
+                // Esta função cuidará do limite por linha.
+                
+                const value = textarea.value;
+                const lines = value.split('\n');
+
+                const newLines = lines.map(line => {
+                    return line.substring(0, maxCharsPerLine);
+                });
+
+                const finalValue = newLines.join('\n');
+
+                if (textarea.value !== finalValue) {
+                    const selectionStart = textarea.selectionStart;
+                    const selectionEnd = textarea.selectionEnd;
+                    
+                    textarea.value = finalValue;
+
+                    // Tenta restaurar a posição do cursor.
+                    textarea.setSelectionRange(
+                        Math.min(selectionStart, finalValue.length),
+                        Math.min(selectionEnd, finalValue.length)
+                    );
+                }
+            }
+
+
+            // Lógica de Telefone Internacional
+            populateCountrySelectors() {
+                const containers = [
+                    ...document.querySelectorAll('.passenger-phones-container'),
+                    document.getElementById('contractor-fields')
+                ];
+
+                containers.forEach(container => {
+                    if (!container) return;
+
+                    const phoneInputGroups = container.querySelectorAll('.phone-input-group');
+                    phoneInputGroups.forEach(group => {
+                        // Evita adicionar seletores duplicados
+                        if (group.querySelector('.country-input-container')) return;
+
+                        const phoneInput = group.querySelector('.phone-input');
+                        if (!phoneInput) return;
+
+                        const inputContainer = document.createElement('div');
+                        inputContainer.className = 'country-input-container';
+
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'country-input';
+                        input.id = `country-select-${phoneInput.id}`;
+                        input.value = '+55'; // Brasil como padrão
+                        input.placeholder = 'DDI';
+                        input.setAttribute('data-country-code', 'BR');
+
+                        const dropdown = document.createElement('div');
+                        dropdown.className = 'country-dropdown';
+                        dropdown.style.display = 'none';
+
+                        inputContainer.appendChild(input);
+                        inputContainer.appendChild(dropdown);
+
+                        group.prepend(inputContainer);
+
+                        this.setupCountrySearch(input, dropdown, phoneInput);
+                    });
+                });
+            }
+
+
+            setupCountrySearch(input, dropdown, phoneInput) {
+                input.addEventListener('focus', () => this.showCountryDropdown(input, dropdown, ''));
+                input.addEventListener('input', (e) => this.showCountryDropdown(input, dropdown, e.target.value));
+                input.addEventListener('blur', () => setTimeout(() => dropdown.style.display = 'none', 200));
+
+                this.setupPhoneInputForCountry(phoneInput, 'BR');
+            }
+
+            showCountryDropdown(input, dropdown, query) {
+                const filteredCountries = this.filterCountries(query);
+                dropdown.innerHTML = '';
+                filteredCountries.forEach(country => {
+                    const item = document.createElement('div');
+                    item.className = 'country-dropdown-item';
+                    item.innerHTML = `<span class="country-name">${country.name}</span> <span class="country-code">+${country.dialCode}</span>`;
+                    item.addEventListener('click', () => {
+                        this.selectCountry(input, country);
+                        dropdown.style.display = 'none';
+                        const phoneInput = input.closest('.phone-input-group').querySelector('.phone-input');
+                        if (phoneInput) this.setupPhoneInputForCountry(phoneInput, country.code);
+                    });
+                    dropdown.appendChild(item);
+                });
+                dropdown.style.display = filteredCountries.length > 0 ? 'block' : 'none';
+            }
+
+            filterCountries(query) {
+                if (!query) return this.countriesData;
+                const lowerQuery = query.toLowerCase().replace('+', '');
+                return this.countriesData.filter(country =>
+                    country.name.toLowerCase().includes(lowerQuery) ||
+                    country.dialCode.includes(lowerQuery) ||
+                    country.code.toLowerCase().includes(lowerQuery)
+                );
+            }
+
+            selectCountry(input, country) {
+                input.value = `+${country.dialCode}`;
+                input.setAttribute('data-country-code', country.code);
+            }
+
+            setupPhoneInputForCountry(phoneInput, countryCode) {
+                if (!phoneInput) return;
+
+                const currentValue = phoneInput.value;
+                // Limpa e reinscreve o evento para evitar múltiplos listeners
+                const newPhoneInput = phoneInput.cloneNode(true);
+                phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
+
+                newPhoneInput.value = currentValue; 
+
+                // Configurações específicas por país
+                const countryConfig = this.getCountryPhoneConfig(countryCode);
+                newPhoneInput.maxLength = countryConfig.maxLength;
+
+                newPhoneInput.addEventListener('input', (e) => {
+                    if (typeof libphonenumber === 'undefined') return;
+
+                    // Remove caracteres não numéricos exceto espaços, parênteses e hífens
+                    let value = e.target.value.replace(/[^0-9\s\(\)\-]/g, '');
+
+                    // Aplica formatação usando libphonenumber
+                    const asYouType = new libphonenumber.AsYouType(countryCode);
+                    const formatted = asYouType.input(value);
+
+                    // Limita o comprimento baseado na configuração do país
+                    if (formatted.length <= countryConfig.maxLength) {
+                        e.target.value = formatted;
+                    } else {
+                        e.target.value = formatted.substring(0, countryConfig.maxLength);
+                    }
+                });
+
+                newPhoneInput.addEventListener('blur', (e) => {
+                    this.validateMobileNumber(e.target, countryCode);
+                });
+
+                this.updatePlaceholderForCountry(newPhoneInput, countryCode);
+            }
+
+            validateMobileNumber(phoneInput, countryCode) {
+                if (typeof libphonenumber === 'undefined' || !phoneInput.value) {
+                    phoneInput.classList.remove('error', 'warning', 'valid');
+                    phoneInput.title = '';
+                    return;
+                };
+
+                try {
+                    const phoneNumber = libphonenumber.parsePhoneNumberFromString(phoneInput.value, countryCode);
+                    phoneInput.classList.remove('error', 'warning', 'valid');
+
+                    if (phoneNumber && phoneNumber.isValid()) {
+                        const type = phoneNumber.getType();
+
+                        // Aceita apenas números móveis
+                        if (type === 'MOBILE') {
+                            phoneInput.classList.add('valid');
+                            phoneInput.title = 'Número de celular válido ✓';
+                        } else if (type === 'FIXED_LINE_OR_MOBILE') {
+                            // Para números que podem ser fixos ou móveis, adiciona aviso
+                            phoneInput.classList.add('warning');
+                            phoneInput.title = 'Verifique se este é um número de celular. Alguns países não distinguem entre fixo e móvel.';
+                        } else {
+                            // Rejeita números fixos e outros tipos
+                            phoneInput.classList.add('error');
+                            phoneInput.title = 'Este número não é um celular. Por favor, insira apenas números de celular.';
+                        }
+                    } else {
+                        phoneInput.classList.add('error');
+                        phoneInput.title = 'Número de telefone inválido para este país.';
+                    }
+                } catch (error) {
+                    phoneInput.classList.remove('warning', 'valid');
+                    phoneInput.classList.add('error');
+                    phoneInput.title = 'Formato de número inválido.';
+                }
+            }
+
+            getCountryPhoneConfig(countryCode) {
+                const configs = {
+                    'BR': { maxLength: 15, example: '(11) 99999-9999', minLength: 10 },
+                    'US': { maxLength: 14, example: '(555) 123-4567', minLength: 10 },
+                    'CA': { maxLength: 14, example: '(416) 123-4567', minLength: 10 },
+                    'PT': { maxLength: 13, example: '912 345 678', minLength: 9 },
+                    'AR': { maxLength: 15, example: '11 1234-5678', minLength: 10 },
+                    'PY': { maxLength: 13, example: '0981 123456', minLength: 9 },
+                    'UY': { maxLength: 12, example: '094 123 456', minLength: 8 },
+                    'GB': { maxLength: 15, example: '07700 900123', minLength: 10 },
+                    'DE': { maxLength: 16, example: '0151 12345678', minLength: 10 },
+                    'FR': { maxLength: 14, example: '06 12 34 56 78', minLength: 10 },
+                    'IT': { maxLength: 15, example: '320 123 4567', minLength: 9 },
+                    'ES': { maxLength: 13, example: '612 34 56 78', minLength: 9 },
+                    'JP': { maxLength: 13, example: '090-1234-5678', minLength: 10 },
+                    'MX': { maxLength: 15, example: '55 1234 5678', minLength: 10 },
+                    'CL': { maxLength: 12, example: '9 8765 4321', minLength: 8 },
+                    'CO': { maxLength: 13, example: '300 123 4567', minLength: 10 },
+                    'PE': { maxLength: 12, example: '987 654 321', minLength: 9 },
+                    'VE': { maxLength: 13, example: '0412-1234567', minLength: 10 },
+                    'EC': { maxLength: 12, example: '099 123 4567', minLength: 9 },
+                    'BO': { maxLength: 11, example: '7 1234567', minLength: 8 },
+                    'AU': { maxLength: 12, example: '0412 345 678', minLength: 9 },
+                    'NZ': { maxLength: 12, example: '021 123 456', minLength: 8 },
+                    'ZA': { maxLength: 12, example: '082 123 4567', minLength: 9 },
+                    'IN': { maxLength: 13, example: '98765 43210', minLength: 10 },
+                    'CN': { maxLength: 13, example: '138 0013 8000', minLength: 11 },
+                    'RU': { maxLength: 16, example: '+7 912 345-67-89', minLength: 10 }
+                };
+                return configs[countryCode] || { maxLength: 15, example: 'Número de celular', minLength: 8 };
+            }
+
+            updatePlaceholderForCountry(phoneInput, countryCode) {
+                const config = this.getCountryPhoneConfig(countryCode);
+                phoneInput.placeholder = config.example;
+            }
+
+
+            toggleContractorFields() {
+                const contractorFields = document.getElementById('contractor-fields');
+                const toggleBtn = document.getElementById('toggle-contractor-btn');
+                const isHidden = !contractorFields.classList.contains('show');
+
+                if (isHidden) {
+                    contractorFields.classList.add('show');
+                    toggleBtn.textContent = 'Ocultar Campos';
+                } else {
+                    contractorFields.classList.remove('show');
+                    toggleBtn.textContent = 'Mostrar Campos';
+                }
+            }
+
+            // Navegação
+            showConfigScreen() {
+                this.hideAllScreens();
+                document.getElementById('config-screen').style.display = 'block';
+                this.loadAgencyConfig();
+            }
+
+            showVouchersListScreen() {
+                this.hideAllScreens();
+                document.getElementById('vouchers-list-screen').style.display = 'block';
+                this.loadVouchersList();
+            }
+
+            showVoucherFormScreen(voucherId = null) {
+                this.hideAllScreens();
+                document.getElementById('voucher-form-screen').style.display = 'block';
+                this.loadAgencyOptions();
+                this.populateCountrySelectors(); // Adiciona o seletor de DDI ao campo do contratante
+
+                if (voucherId) {
+                    this.editingVoucherId = voucherId;
+                    document.getElementById('voucher-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Voucher';
+                    setTimeout(() => this.loadVoucherForEdit(voucherId), 100);
+                } else {
+                    this.editingVoucherId = null;
+                    document.getElementById('voucher-form-title').innerHTML = '<i class="fas fa-plus"></i> Novo Voucher';
+                    this.resetVoucherForm();
+                }
+            }
+
+            hideAllScreens() {
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.style.display = 'none';
+                });
+            }
+
+            // Configuração da Agência
+            populateAgencySelect() {
+                const select = document.getElementById('agency-select-for-template');
+                if (!select) return;
+
+                const agencies = this.getAllAgencies();
+                select.innerHTML = '<option value="">Selecione uma agência...</option>';
+                agencies.forEach(agency => {
+                    const option = document.createElement('option');
+                    option.value = agency.id;
+                    option.textContent = agency.name;
+                    select.appendChild(option);
+                });
+                select.innerHTML += '<option value="new">-- Adicionar Nova Agência --</option>';
+
+                select.addEventListener('change', (e) => {
+                    const newAgencyGroup = document.getElementById('new-agency-name-group');
+                    const newAgencyInput = document.getElementById('new-agency-name');
+                    if (e.target.value === 'new') {
+                        newAgencyGroup.style.display = 'block';
+                        newAgencyInput.required = true;
+                    } else {
+                        newAgencyGroup.style.display = 'none';
+                        newAgencyInput.required = false;
+                        newAgencyInput.value = '';
+                    }
+                });
+            }
+
+            async saveAgencyConfig(e) {
+                e.preventDefault();
+                const agencySelect = document.getElementById('agency-select-for-template');
+                const selectedAgencyId = agencySelect.value;
+                const templateFile = document.getElementById('pdf-template').files[0];
+
+                if (!selectedAgencyId) {
+                    this.showErrorMessage('Por favor, selecione uma agência ou a opção para adicionar uma nova.');
+                    return;
+                }
+
+                if (!templateFile) {
+                    this.showErrorMessage('Por favor, selecione um arquivo de template PDF.');
+                    return;
+                }
+
+                let agencyIdentifier;
+                if (selectedAgencyId === 'new') {
+                    agencyIdentifier = document.getElementById('new-agency-name').value.trim();
+                    if (!agencyIdentifier) {
+                        this.showErrorMessage('Por favor, digite o nome da nova agência.');
+                        return;
+                    }
+                } else {
+                    agencyIdentifier = selectedAgencyId;
+                }
+
+                this.saveAgencyWithTemplate(agencyIdentifier, templateFile);
+            }
+
+            async saveAgencyWithTemplate(agencyIdentifier, templateFile) {
+                try {
+                    const arrayBuffer = await templateFile.arrayBuffer();
+                    const base64String = this.arrayBufferToBase64(arrayBuffer);
+                    const templateData = {
+                        name: templateFile.name,
+                        data: base64String,
+                    };
+                    const agencies = this.getAllAgencies();
+
+                    let agencyToUpdate = agencies.find(a => a.id === agencyIdentifier || a.name === agencyIdentifier);
+
+                    if (agencyToUpdate) {
+                        agencyToUpdate.templates.push(templateData);
+                        this.showSuccessMessage(`Template adicionado à agência "${agencyToUpdate.name}"!`);
+                    } else {
+                        const newAgency = {
+                            id: this.generateId(),
+                            name: agencyIdentifier,
+                            templates: [templateData],
+                        };
+                        agencies.push(newAgency);
+                        this.showSuccessMessage(`Agência "${newAgency.name}" criada com sucesso!`);
+                    }
+
+                    localStorage.setItem('agencies', JSON.stringify(agencies));
+
+                    document.getElementById('agency-config-form').reset();
+                    document.getElementById('pdf-template-status').innerHTML = '';
+                    document.getElementById('pdf-template-status').className = 'template-status';
+                    document.getElementById('new-agency-name-group').style.display = 'none';
+                    this.loadAgenciesList();
+                    this.populateAgencySelect();
+                    this.loadAgencyOptions();
+                } catch (error) {
+                    this.showErrorMessage('Erro ao salvar agência e template.');
+                    console.error('Save error:', error);
+                }
+            }
+
+
+            getAllAgencies() {
+                const agencies = localStorage.getItem('agencies');
+                return agencies ? JSON.parse(agencies) : [];
+            }
+
+            loadAgencyOptions() {
+                const agencies = this.getAllAgencies();
+                const select = document.getElementById('selected-agency');
+                if (!select) return;
+                select.innerHTML = '<option value="">Selecione uma agência...</option>';
+                agencies.forEach(agency => {
+                    const option = document.createElement('option');
+                    option.value = agency.id;
+                    option.textContent = agency.name;
+                    select.appendChild(option);
+                });
+            }
+
+            loadTemplatesForAgency(agencyId) {
+                const agencies = this.getAllAgencies();
+                const agency = agencies.find(a => a.id === agencyId);
+                const templateSelect = document.getElementById('selected-template');
+                if (!templateSelect) return;
+                templateSelect.innerHTML = '<option value="">Selecione um template...</option>';
+                if (agency && agency.templates) {
+                    agency.templates.forEach((template, index) => {
+                        const option = document.createElement('option');
+                        option.value = `${agencyId}-${index}`;
+                        option.textContent = template.name;
+                        templateSelect.appendChild(option);
+                    });
+                    if (agency.templates.length > 0) {
+                        templateSelect.value = `${agencyId}-0`;
+                        this.selectTemplate(templateSelect.value);
+                    }
+                }
+            }
+
+            selectTemplate(templateId) {
+                if (!templateId) {
+                    this.currentTemplate = null;
+                    return;
+                }
+                const [agencyId, templateIndex] = templateId.split('-');
+                const agencies = this.getAllAgencies();
+                const agency = agencies.find(a => a.id === agencyId);
+                if (agency && agency.templates[templateIndex]) {
+                    this.currentTemplate = {
+                        agency,
+                        template: agency.templates[templateIndex]
+                    };
+                }
+            }
+
+            loadAgencyConfig() {
+                this.loadAgenciesList();
+                this.populateAgencySelect();
+            }
+
+            loadAgenciesList() {
+                const agenciesList = document.getElementById('agencies-list');
+                if (!agenciesList) return;
+                const agencies = this.getAllAgencies();
+                if (agencies.length === 0) {
+                    agenciesList.innerHTML = '<div class="empty-agencies">Nenhuma agência cadastrada ainda.</div>';
+                    return;
+                }
+                agenciesList.innerHTML = agencies.map(agency => `
+                <div class="agency-item">
+                    <div class="agency-item-header">
+                         <div class="agency-info">
+                              <div class="agency-name">${agency.name}</div>
+                        </div>
+                        <div class="agency-actions">
+                            <button class="btn btn-danger btn-small remove-agency-btn" data-agency-id="${agency.id}">
+                                <i class="fa fa-trash"></i> Remover Agência
+                            </button>
+                        </div>
+                    </div>
+                    <div class="templates-list">
+                        ${(agency.templates && agency.templates.length > 0) ?
+                        agency.templates.map((template, index) => `
+                        <div class="template-item">
+                            <span class="template-name"><i class="fas fa-file-pdf"></i> ${template.name}</span>
+                            <button class="remove-template-btn" data-agency-id="${agency.id}" data-template-index="${index}" title="Remover este template">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        `).join('')
+                        : '<p class="empty-agencies" style="padding: 0.5rem 0; text-align: left;">Nenhum template adicionado.</p>'
+                    }
+                    </div>
+                </div>`).join('');
+
+                agenciesList.querySelectorAll('.remove-agency-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        this.removeAgency(e.currentTarget.getAttribute('data-agency-id'));
+                    });
+                });
+
+                agenciesList.querySelectorAll('.remove-template-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        this.removeTemplate(
+                            e.currentTarget.getAttribute('data-agency-id'),
+                            parseInt(e.currentTarget.getAttribute('data-template-index'), 10)
+                        );
+                    });
+                });
+            }
+
+            removeAgency(agencyId) {
+                try {
+                    let agencies = this.getAllAgencies();
+                    agencies = agencies.filter(agency => agency.id !== agencyId);
+                    localStorage.setItem('agencies', JSON.stringify(agencies));
+                    this.showSuccessMessage('Agência removida com sucesso!');
+                    this.loadAgenciesList();
+                    this.populateAgencySelect();
+                    this.loadAgencyOptions();
+                } catch (error) {
+                    this.showErrorMessage('Erro ao remover agência.');
+                }
+            }
+
+            removeTemplate(agencyId, templateIndex) {
+                try {
+                    let agencies = this.getAllAgencies();
+                    const agency = agencies.find(a => a.id === agencyId);
+                    if (agency && agency.templates[templateIndex]) {
+                        agency.templates.splice(templateIndex, 1);
+                        localStorage.setItem('agencies', JSON.stringify(agencies));
+                        this.showSuccessMessage('Template removido com sucesso!');
+                        this.loadAgenciesList();
+                        this.populateAgencySelect(); // Refresh select
+                        this.loadAgencyOptions(); // Refresh voucher form select
+                    } else {
+                        this.showErrorMessage('Não foi possível encontrar o template para remover.');
+                    }
+                } catch (error) {
+                    this.showErrorMessage('Erro ao remover o template.');
+                    console.error('Remove template error:', error);
+                }
+            }
+
+
+            // CRUD de Vouchers
+            getAllVouchers() {
+                const vouchers = localStorage.getItem('vouchers');
+                return vouchers ? JSON.parse(vouchers).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
+            }
+
+            saveVoucher() {
+                const voucherData = this.getVoucherFormData();
+                if (!this.validateVoucherData(voucherData)) return;
+
+                this.saveAutocompleteData(voucherData);
+                const vouchers = this.getAllVouchers();
+                if (this.editingVoucherId) {
+                    const index = vouchers.findIndex(v => v.id === this.editingVoucherId);
+                    if (index !== -1) {
+                        vouchers[index] = { ...vouchers[index],
+                            ...voucherData,
+                            updatedAt: new Date().toISOString()
+                        };
+                    }
+                } else {
+                    voucherData.id = this.generateId();
+                    voucherData.createdAt = new Date().toISOString();
+                    vouchers.push(voucherData);
+                }
+                localStorage.setItem('vouchers', JSON.stringify(vouchers));
+                this.showSuccessMessage('Voucher salvo com sucesso!');
+                setTimeout(() => this.showVouchersListScreen(), 1500);
+            }
+
+            getVoucherFormData() {
+                const destinations = Array.from(document.querySelectorAll('.destination-row')).map(row => ({
+                    destination: row.querySelector('input[name="destination"]').value,
+                    date: this.formatDateDDMMYY(row.querySelector('input[name="date"]').value),
+                    time: row.querySelector('input[name="time"]').value
+                })).filter(d => d.destination);
+
+                const passengers = Array.from(document.querySelectorAll('.passenger-row input[name="passenger"]')).map(input => input.value).filter(p => p);
+
+                return {
+                    selectedAgency: document.getElementById('selected-agency').value,
+                    selectedTemplate: document.getElementById('selected-template').value,
+                    destinations,
+                    local_embarque: document.getElementById('local_embarque').value,
+                    passengers,
+                    contato_01: this.getCombinedPhoneNumber('contato_01'),
+                    contato_02: this.getCombinedPhoneNumber('contato_02'),
+                    qt_adulto: parseInt(document.getElementById('qt_adulto').value) || 0,
+                    qt_crianca: parseInt(document.getElementById('qt_crianca').value) || 0,
+                    qt_colo: parseInt(document.getElementById('qt_colo').value) || 0,
+                    total_passageiros: parseInt(document.getElementById('total_passageiros').value) || 0,
+                    total_a_pagar: parseFloat(document.getElementById('total_a_pagar').value) || 0,
+                    pre_reserva: parseFloat(document.getElementById('pre_reserva').value) || 0,
+                    falta_pagar: parseFloat(document.getElementById('falta_pagar').value) || 0,
+                    observacao: document.getElementById('observacao').value,
+                    data_contrato: this.formatDateDDMMYY(document.getElementById('data_contrato').value),
+                    nome_contratante: document.getElementById('nome_contratante').value,
+                    contato_contratante: this.getCombinedPhoneNumber('contato_contratante'),
+                    email_contratante: document.getElementById('email_contratante').value,
+                    includeContractorDate: document.getElementById('include-contractor-date').checked,
+                    includeContractorName: document.getElementById('include-contractor-name').checked,
+                    includeContractorEmail: document.getElementById('include-contractor-email').checked,
+                    includeContractorContact: document.getElementById('include-contractor-contact').checked
+                };
+            }
+
+            validateVoucherData(data) {
+                if (!data.selectedAgency) return this.showErrorMessage('Selecione uma agência!');
+                if (!data.selectedTemplate) return this.showErrorMessage('Selecione um template!');
+                // Contractor data is not mandatory anymore
+                // if (!data.nome_contratante) return this.showErrorMessage('Nome do contratante é obrigatório!');
+                if (data.destinations.length === 0) return this.showErrorMessage('Pelo menos um destino deve ser informado!');
+                return true;
+            }
+
+            loadVoucherForEdit(voucherId) {
+                const voucher = this.getAllVouchers().find(v => String(v.id) === String(voucherId));
+                if (!voucher) {
+                    this.showErrorMessage('Voucher não encontrado.');
+                    return;
+                }
+                this._populateFormWithData(voucher);
+            }
+
+            _populateFormWithData(voucher) {
+                if (voucher.selectedAgency) {
+                    document.getElementById('selected-agency').value = voucher.selectedAgency;
+                    this.loadTemplatesForAgency(voucher.selectedAgency);
+                    setTimeout(() => {
+                        if (voucher.selectedTemplate) {
+                            document.getElementById('selected-template').value = voucher.selectedTemplate;
+                            this.selectTemplate(voucher.selectedTemplate);
+                        }
+                    }, 100);
+                }
+
+                this.clearDestinations();
+                (voucher.destinations || []).forEach(d => this.addDestination(d));
+                if (document.querySelectorAll('.destination-row').length === 0) this.addDestination();
+
+                this.clearPassengers();
+                (voucher.passengers || []).forEach(p => this.addPassenger(p));
+                if (document.querySelectorAll('.passenger-row').length === 0) this.addPassenger();
+
+                document.getElementById('local_embarque').value = voucher.local_embarque || '';
+                document.getElementById('qt_adulto').value = voucher.qt_adulto || 0;
+                document.getElementById('qt_crianca').value = voucher.qt_crianca || 0;
+                document.getElementById('qt_colo').value = voucher.qt_colo || 0;
+                document.getElementById('total_a_pagar').value = voucher.total_a_pagar || 0;
+                document.getElementById('pre_reserva').value = voucher.pre_reserva || 0;
+                document.getElementById('observacao').value = voucher.observacao || '';
+                document.getElementById('data_contrato').value = this.convertDateToISO(voucher.data_contrato) || '';
+                document.getElementById('nome_contratante').value = voucher.nome_contratante || '';
+                document.getElementById('email_contratante').value = voucher.email_contratante || '';
+
+                // Carregar estado dos checkboxes (default para true se não existir)
+                document.getElementById('include-contractor-date').checked = voucher.includeContractorDate !== false;
+                document.getElementById('include-contractor-name').checked = voucher.includeContractorName !== false;
+                document.getElementById('include-contractor-email').checked = voucher.includeContractorEmail !== false;
+                document.getElementById('include-contractor-contact').checked = voucher.includeContractorContact !== false;
+
+
+                // Load phone numbers correctly after fields are created
+                this.addPassengerPhones(); // This will just create the structure
+
+                setTimeout(() => {
+                    this.populatePhoneField('contato_01', voucher.contato_01);
+                    this.populatePhoneField('contato_02', voucher.contato_02);
+                    this.populatePhoneField('contato_contratante', voucher.contato_contratante);
+                }, 0);
+
+
+                // Show contractor fields if they have data
+                if (voucher.nome_contratante) {
+                    const contractorFields = document.getElementById('contractor-fields');
+                    if (!contractorFields.classList.contains('show')) {
+                        this.toggleContractorFields();
+                    }
+                }
+
+                this.calculateTotalPassengers();
+                this.calculateRemainingAmount();
+            }
+
+            duplicateVoucher(voucherId) {
+                const voucherToDuplicate = this.getAllVouchers().find(v => String(v.id) === String(voucherId));
+                if (!voucherToDuplicate) {
+                    return this.showErrorMessage('Voucher não encontrado para duplicação.');
+                }
+
+                const duplicatedVoucherData = JSON.parse(JSON.stringify(voucherToDuplicate));
+
+                // Set as a new voucher
+                this.editingVoucherId = null;
+                this.showVoucherFormScreen();
+
+                setTimeout(() => {
+                    document.getElementById('voucher-form-title').innerHTML = `<i class="fas fa-copy"></i> Duplicando Voucher`;
+                    this._populateFormWithData(duplicatedVoucherData);
+                }, 100);
+            }
+
+            deleteVoucher(voucherId) {
+                if (!voucherId) {
+                    this.showErrorMessage('ID do voucher não encontrado!');
+                    return;
+                }
+
+                if (confirm('Tem certeza que deseja excluir este voucher?')) {
+                    const vouchers = this.getAllVouchers();
+                    const initialCount = vouchers.length;
+
+                    // Correção: Garante que os IDs sejam comparados como strings para evitar erros de tipo.
+                    const filteredVouchers = vouchers.filter(v => String(v.id) !== String(voucherId));
+
+                    if (filteredVouchers.length === initialCount) {
+                        this.showErrorMessage('Voucher não encontrado para exclusão!');
+                        return;
+                    }
+
+                    localStorage.setItem('vouchers', JSON.stringify(filteredVouchers));
+                    this.loadVouchersList();
+                    this.showSuccessMessage('Voucher excluído com sucesso!');
+                }
+            }
+
+            // Formulário de Voucher
+            resetVoucherForm() {
+                document.getElementById('voucher-form').reset();
+                const today = new Date();
+                const todayISO = today.getFullYear() + '-' +
+                    String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(today.getDate()).padStart(2, '0');
+                document.getElementById('data_contrato').value = todayISO;
+                this.clearDestinations();
+                this.clearPassengers();
+                this.addDestination();
+                this.addPassenger();
+                this.addPassengerPhones();
+                this.calculateTotalPassengers();
+                this.calculateRemainingAmount();
+                const contractorFields = document.getElementById('contractor-fields');
+                if (contractorFields.classList.contains('show')) {
+                    this.toggleContractorFields();
+                }
+                // Resetar checkboxes
+                document.getElementById('include-contractor-date').checked = true;
+                document.getElementById('include-contractor-name').checked = true;
+                document.getElementById('include-contractor-email').checked = true;
+                document.getElementById('include-contractor-contact').checked = true;
+                this.populatePhoneField('contato_contratante', '+55 ');
+
+            }
+
+            addDestination(dest = {}) {
+                const container = document.getElementById('destinations-container');
+                if (container.children.length >= 7) {
+                    this.showErrorMessage("O limite de 7 destinos foi atingido.");
+                    return;
+                }
+                const row = document.createElement('div');
+                row.className = 'destination-row';
+                row.innerHTML = `
+                <div class="form-group">
+                    <input type="text" name="destination" class="form-input autocomplete-input" data-field="destination" value="${dest.destination || ''}" placeholder="Destino">
+                </div>
+                <div class="form-group">
+                    <input type="date" name="date" class="form-input" value="${this.convertDateToISO(dest.date) || ''}" placeholder="Data">
+                </div>
+                <div class="form-group">
+                    <input type="time" name="time" class="form-input" value="${dest.time || ''}" placeholder="Horário">
+                </div>
+                <button type="button" class="remove-destination-btn" title="Remover"><i class="fas fa-trash"></i></button>`;
+                container.appendChild(row);
+                row.querySelector('.remove-destination-btn').addEventListener('click', () => {
+                    if (container.children.length > 1) row.remove();
+                });
+                this.setupAutocompleteForField(row.querySelector('.autocomplete-input'));
+            }
+
+            clearDestinations() {
+                document.getElementById('destinations-container').innerHTML = '';
+            }
+
+            addPassenger(name = '') {
+                const container = document.getElementById('passengers-container');
+                if (container.children.length >= 10) {
+                    this.showErrorMessage("O limite de 10 passageiros foi atingido.");
+                    return;
+                }
+                const count = container.children.length + 1;
+                const row = document.createElement('div');
+                row.className = 'passenger-row';
+                row.innerHTML = `
+                <label>PAX ${count}</label>
+                <input type="text" name="passenger" class="form-input autocomplete-input" data-field="passenger" value="${name || ''}">
+                <button type="button" class="btn btn-danger btn-sm remove-passenger-btn" title="Remover passageiro">
+                    <i class="fas fa-trash"></i>
+                </button>`;
+                container.appendChild(row);
+                this.setupAutocompleteForField(row.querySelector('.autocomplete-input'));
+
+                // Adicionar event listener para o botão de remover
+                const removeBtn = row.querySelector('.remove-passenger-btn');
+                removeBtn.addEventListener('click', () => this.removePassenger(row));
+            }
+
+            removePassenger(passengerRow) {
+                const container = document.getElementById('passengers-container');
+                if (container.children.length > 1) {
+                    passengerRow.remove();
+                    this.updatePassengerLabels();
+                } else {
+                    this.showErrorMessage('É necessário manter pelo menos um passageiro.');
+                }
+            }
+
+            clearPassengers() {
+                document.getElementById('passengers-container').innerHTML = '';
+            }
+
+            updatePassengerLabels() {
+                const container = document.getElementById('passengers-container');
+                const passengerRows = container.querySelectorAll('.passenger-row');
+                passengerRows.forEach((row, index) => {
+                    const label = row.querySelector('label');
+                    label.textContent = `PAX ${index + 1}`;
+                });
+            }
+
+            addPassengerPhones() {
+                const container = document.querySelector('.passenger-phones-container');
+                container.innerHTML = ''; // Limpa antes de adicionar
+
+                for (let i = 1; i <= 2; i++) {
+                    const unit = document.createElement('div');
+                    unit.className = 'passenger-phone-unit';
+                    unit.innerHTML = `
+                        <label for="contato_0${i}">Contato Passageiro ${i}</label>
+                        <div class="phone-input-group">
+                            <input type="tel" id="contato_0${i}" class="form-input phone-input" value="">
+                        </div>`;
+                    container.appendChild(unit);
+                }
+                this.populateCountrySelectors();
+            }
+
+            // Cálculos
+            calculateTotalPassengers() {
+                const adults = parseInt(document.getElementById('qt_adulto').value) || 0;
+                const children = parseInt(document.getElementById('qt_crianca').value) || 0;
+                const infants = parseInt(document.getElementById('qt_colo').value) || 0;
+                document.getElementById('total_passageiros').value = adults + children + infants;
+            }
+
+            calculateRemainingAmount() {
+                const total = parseFloat(document.getElementById('total_a_pagar').value) || 0;
+                const preBooking = parseFloat(document.getElementById('pre_reserva').value) || 0;
+                document.getElementById('falta_pagar').value = (total - preBooking).toFixed(2);
+            }
+
+            setupFormCalculations() {
+                document.querySelectorAll('.passenger-count').forEach(input => input.addEventListener('input', () => this.calculateTotalPassengers()));
+                document.querySelectorAll('.money-input').forEach(input => input.addEventListener('input', () => this.calculateRemainingAmount()));
+                this.setupDateTimePlaceholders();
+            }
+
+            setupDateTimePlaceholders() {
+                // Função para configurar placeholders personalizados para campos de data e hora
+                const setupPlaceholder = (input, placeholderText) => {
+                    const updatePlaceholder = () => {
+                        if (!input.value) {
+                            input.style.color = '#9ca3af';
+                            input.setAttribute('data-placeholder', placeholderText);
+                            if (input.type === 'date') {
+                                input.type = 'text';
+                                input.value = placeholderText;
+                            } else if (input.type === 'time') {
+                                input.type = 'text';
+                                input.value = placeholderText;
+                            }
+                        }
+                    };
+
+                    const restoreInput = () => {
+                        if (input.value === placeholderText) {
+                            input.value = '';
+                        }
+                        input.style.color = '';
+                        if (input.getAttribute('data-placeholder') === 'Data') {
+                            input.type = 'date';
+                        } else if (input.getAttribute('data-placeholder') === 'Horário') {
+                            input.type = 'time';
+                        }
+                    };
+
+                    input.addEventListener('focus', restoreInput);
+                    input.addEventListener('blur', updatePlaceholder);
+                    
+                    // Configurar estado inicial
+                    updatePlaceholder();
+                };
+
+                // Aplicar aos campos existentes
+                document.querySelectorAll('input[type="date"]').forEach(input => {
+                    setupPlaceholder(input, 'Data');
+                });
+                
+                document.querySelectorAll('input[type="time"]').forEach(input => {
+                    setupPlaceholder(input, 'Horário');
+                });
+
+                // Observer para campos adicionados dinamicamente
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === 1) {
+                                const dateInputs = node.querySelectorAll ? node.querySelectorAll('input[type="date"]') : [];
+                                const timeInputs = node.querySelectorAll ? node.querySelectorAll('input[type="time"]') : [];
+                                
+                                dateInputs.forEach(input => setupPlaceholder(input, 'Data'));
+                                timeInputs.forEach(input => setupPlaceholder(input, 'Horário'));
+                            }
+                        });
+                    });
+                });
+
+                observer.observe(document.body, { childList: true, subtree: true });
+            }
+
+            // Autocomplete
+            setupAutocomplete() {
+                document.querySelectorAll('.autocomplete-input').forEach(input => this.setupAutocompleteForField(input));
+            }
+
+            setupAutocompleteForField(input) {
+                const field = input.dataset.field;
+                input.addEventListener('input', (e) => this.showAutocompleteSuggestions(e.target, field));
+                input.addEventListener('blur', () => setTimeout(() => this.hideAutocompleteSuggestions(), 200));
+            }
+
+            showAutocompleteSuggestions(input, field) {
+                const value = input.value.toLowerCase();
+                const suggestions = (this.autocompleteData[field] || []).filter(s => s.toLowerCase().includes(value)).slice(0, 5);
+                if (value.length < 2 || suggestions.length === 0) {
+                    this.hideAutocompleteSuggestions();
+                    return;
+                }
+                this.displayAutocompleteSuggestions(input, suggestions);
+            }
+
+            displayAutocompleteSuggestions(input, suggestions) {
+                const container = document.getElementById('autocomplete-suggestions');
+                const rect = input.getBoundingClientRect();
+                container.style.left = `${rect.left}px`;
+                container.style.top = `${rect.bottom + window.scrollY}px`;
+                container.style.width = `${rect.width}px`;
+                container.style.display = 'block';
+                container.innerHTML = suggestions.map(s => `<div class="autocomplete-suggestion">${s}</div>`).join('');
+                container.querySelectorAll('.autocomplete-suggestion').forEach(suggestion => {
+                    suggestion.addEventListener('click', () => {
+                        input.value = suggestion.textContent;
+                        this.hideAutocompleteSuggestions();
+                        input.focus();
+                    });
+                });
+            }
+
+            hideAutocompleteSuggestions() {
+                document.getElementById('autocomplete-suggestions').style.display = 'none';
+            }
+
+            saveAutocompleteData(voucherData) {
+                (voucherData.destinations || []).forEach(d => this.addToAutocomplete('destination', d.destination));
+                this.addToAutocomplete('local_embarque', voucherData.local_embarque);
+                (voucherData.passengers || []).forEach(p => this.addToAutocomplete('passenger', p));
+                this.addToAutocomplete('nome_contratante', voucherData.nome_contratante);
+                // Adicione mais campos se desejar
+                localStorage.setItem('autocompleteData', JSON.stringify(this.autocompleteData));
+            }
+
+            addToAutocomplete(field, value) {
+                if (!value) return;
+                if (!this.autocompleteData[field]) this.autocompleteData[field] = [];
+                if (!this.autocompleteData[field].includes(value)) {
+                    this.autocompleteData[field].push(value);
+                    if (this.autocompleteData[field].length > 50) {
+                        this.autocompleteData[field] = this.autocompleteData[field].slice(-50);
+                    }
+                }
+            }
+
+            loadAutocompleteData() {
+                const data = localStorage.getItem('autocompleteData');
+                return data ? JSON.parse(data) : {};
+            }
+
+            // PDF
+            async generatePDF() {
+                try {
+                    const voucherData = this.getVoucherFormData();
+                    if (!this.validateVoucherData(voucherData)) return;
+
+                    await this.createPDF(voucherData);
+                } catch (error) {
+                    this.showErrorMessage('Erro ao gerar PDF: ' + error.message);
+                }
+            }
+
+            async generatePDFFromVoucher(voucherId) {
+                const voucher = this.getAllVouchers().find(v => v.id === voucherId);
+                if (voucher) {
+                    await this.createPDF(voucher);
+                }
+            }
+
+            async createPDF(voucherData) {
+                if (typeof PDFLib === 'undefined') {
+                    return this.showErrorMessage('Biblioteca PDF não carregada.');
+                }
+
+                try {
+                    const templateBytes = await this.loadSelectedTemplate(voucherData.selectedTemplate);
+                    if (!templateBytes) {
+                        return this.showErrorMessage('Template PDF não encontrado.');
+                    }
+
+                    const {
+                        PDFDocument
+                    } = PDFLib;
+                    const pdfDoc = await PDFDocument.load(templateBytes);
+                    const form = pdfDoc.getForm();
+
+                    this.fillPDFFields(form, voucherData);
+
+                    form.flatten(); // Torna os campos não editáveis
+
+                    const pdfBytes = await pdfDoc.save();
+
+                    const blob = new Blob([pdfBytes], {
+                        type: 'application/pdf'
+                    });
+                    const safeName = (voucherData.nome_contratante || 'voucher').replace(/[^a-zA-Z0-9]/g, '_');
+                    const fileName = `voucher_${safeName}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                    this.showSuccessMessage('PDF baixado com sucesso!');
+
+                } catch (error) {
+                    console.error("Erro detalhado ao criar PDF:", error);
+                    this.showErrorMessage('Erro ao criar o PDF. Verifique o console para detalhes.');
+                }
+            }
+
+            fillPDFFields(form, voucherData) {
+                const setField = (fieldName, value) => {
+                    try {
+                        // Garante que não tentemos preencher campos com valores vazios ou nulos
+                        if (value !== undefined && value !== null && String(value).trim() !== '') {
+                            const field = form.getField(fieldName);
+                            field.setText(String(value));
+                        }
+                    } catch (e) {
+                        // Se o campo não for encontrado no PDF, um aviso será exibido no console do navegador.
+                        // Isso ajuda a diagnosticar problemas com o template.
+                        console.warn(`Campo do PDF não encontrado: '${fieldName}'. Verifique se o nome está correto no seu template.`);
+                    }
+                };
+
+                // --- Preenchimento dos Campos (Conforme solicitado) ---
+
+                // Roteiro
+                (voucherData.destinations || []).forEach((dest, i) => {
+                    if (i >= 7) return;
+                    const num = String(i + 1).padStart(2, '0');
+                    setField(`destino_${num}`, dest.destination);
+                    setField(`data_${num}`, dest.date);
+                    setField(`horario_${num}`, dest.time);
+                });
+
+                // Lista de Passageiros
+                (voucherData.passengers || []).forEach((p, i) => {
+                    if (i >= 10) return;
+                    const num = String(i + 1).padStart(2, '0');
+                    setField(`passageiro_${num}`, p);
+                });
+
+                // Dados da Viagem
+                setField('local_embarque', voucherData.local_embarque);
+                setField('observacao', voucherData.observacao);
+
+                // Quantitativos
+                setField('qt_adulto', voucherData.qt_adulto);
+                setField('qt_crianca', voucherData.qt_crianca);
+                setField('qt_colo', voucherData.qt_colo);
+                setField('total_passageiros', voucherData.total_passageiros);
+
+                // Contato dos Passageiros
+                setField('contato_01', voucherData.contato_01);
+                setField('contato_02', voucherData.contato_02);
+
+                // Financeiro
+                setField('total_a_pagar', `R$ ${parseFloat(voucherData.total_a_pagar || 0).toFixed(2)}`);
+                setField('pre_reserva', `R$ ${parseFloat(voucherData.pre_reserva || 0).toFixed(2)}`);
+                setField('falta_pagar', `R$ ${parseFloat(voucherData.falta_pagar || 0).toFixed(2)}`);
+
+                // Lógica para preenchimento condicional dos DADOS DO CONTRATANTE
+                if (voucherData.includeContractorDate) {
+                    setField('data_contrato', `Data do Contrato: ${voucherData.data_contrato}`);
+                }
+                if (voucherData.includeContractorName) {
+                    setField('nome_contratante', `Contratante: ${voucherData.nome_contratante}`);
+                }
+                if (voucherData.includeContractorEmail) {
+                    setField('email_contratante', `E-mail: ${voucherData.email_contratante}`);
+                }
+                if (voucherData.includeContractorContact) {
+                    setField('contato_contratante', `Contato: ${voucherData.contato_contratante}`);
+                }
+            }
+
+            async loadSelectedTemplate(templateId) {
+                if (!templateId) return null;
+                try {
+                    const [agencyId, templateIndex] = templateId.split('-');
+                    const agencies = this.getAllAgencies();
+                    const agency = agencies.find(a => a.id === agencyId);
+                    if (agency && agency.templates && agency.templates[templateIndex]) {
+                        const base64String = agency.templates[templateIndex].data;
+                        if (base64String && typeof base64String === 'string') {
+                            return this.base64ToUint8Array(base64String);
+                        }
+                    }
+                    return null;
+                } catch (error) {
+                    console.error('Erro ao carregar template:', error);
+                    return null;
+                }
+            }
+
+            async handlePDFTemplateUpload(e) {
+                const file = e.target.files[0];
+                const statusDiv = document.getElementById('pdf-template-status');
+                if (file && file.type === 'application/pdf') {
+                    statusDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Carregando...`;
+                    statusDiv.className = 'template-status loading';
+                    setTimeout(() => {
+                        statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${file.name} pronto para salvar.`;
+                        statusDiv.className = 'template-status success';
+                    }, 500);
+                } else {
+                    statusDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Selecione um PDF válido.';
+                    statusDiv.className = 'template-status error';
+                }
+            }
+
+
+            // Utilitários
+            arrayBufferToBase64(buffer) {
+                let binary = '';
+                const bytes = new Uint8Array(buffer);
+                const len = bytes.byteLength;
+                for (let i = 0; i < len; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                return window.btoa(binary);
+            }
+
+            base64ToUint8Array(base64) {
+                const binary_string = window.atob(base64);
+                const len = binary_string.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binary_string.charCodeAt(i);
+                }
+                return bytes;
+            }
+
+            generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            }
+
+            formatDateTimeDDMMYY(isoString) {
+                if (!isoString) return '';
+                try {
+                    const date = new Date(isoString);
+                    if (isNaN(date.getTime())) return isoString; // Retorna string original se for inválida
+
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+                    return `${day}/${month}/${year} às ${hours}:${minutes}`;
+                } catch {
+                    return isoString; // Em caso de erro, retorna a string original
+                }
+            }
+
+            formatDateDDMMYY(dateString) {
+                if (!dateString || !dateString.includes('-')) return dateString || '';
+                try {
+                    const date = new Date(dateString + 'T00:00:00'); // Garante que seja interpretado como data local
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
+                } catch {
+                    return dateString;
+                }
+            }
+
+            convertDateToISO(dateString) {
+                if (!dateString) return '';
+                if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) return dateString;
+                if (dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                    const [day, month, year] = dateString.split('/');
+                    return `${year}-${month}-${day}`;
+                }
+                return '';
+            }
+
+            loadVouchersList() {
+                const vouchers = this.getAllVouchers();
+                const container = document.getElementById('vouchers-list');
+                const emptyState = document.getElementById('empty-state');
+                if (vouchers.length === 0) {
+                    container.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                container.style.display = 'block';
+                emptyState.style.display = 'none';
+
+                container.innerHTML = vouchers.map(v => this.createVoucherListItem(v)).join('');
+
+                container.querySelectorAll('.edit-voucher-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    this.showVoucherFormScreen(e.currentTarget.closest('.voucher-item').dataset.voucherId);
+                }));
+                container.querySelectorAll('.delete-voucher-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const voucherId = e.currentTarget.closest('.voucher-item').dataset.voucherId;
+                    this.deleteVoucher(voucherId);
+                }));
+                container.querySelectorAll('.generate-pdf-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    this.generatePDFFromVoucher(e.currentTarget.closest('.voucher-item').dataset.voucherId);
+                }));
+                container.querySelectorAll('.duplicate-voucher-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    this.duplicateVoucher(e.currentTarget.closest('.voucher-item').dataset.voucherId);
+                }));
+            }
+
+            createVoucherListItem(voucher) {
+                const destinations = (voucher.destinations || []).map(d => d.destination).join(', ') || 'N/A';
+                const totalPassengers = voucher.total_passageiros || 0;
+                return `
+                <div class="voucher-item" data-voucher-id="${voucher.id}">
+                    <div class="voucher-header">
+                        <div>
+                            <div class="voucher-title">${voucher.nome_contratante}</div>
+                            <div class="voucher-date">Criado em ${this.formatDateTimeDDMMYY(voucher.createdAt)}</div>
+                        </div>
+                        <div class="voucher-actions">
+                            <button class="btn btn-secondary edit-voucher-btn"><i class="fas fa-edit"></i> Editar</button>
+                            <button class="btn btn-info duplicate-voucher-btn"><i class="fas fa-copy"></i> Duplicar</button>
+                            <button class="btn btn-success generate-pdf-btn"><i class="fas fa-file-pdf"></i> PDF</button>
+                            <button class="btn btn-danger delete-voucher-btn"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="voucher-info">
+                        <div class="voucher-info-item">
+                            <div class="voucher-info-label">Destinos</div>
+                            <div class="voucher-info-value">${destinations}</div>
+                        </div>
+                        <div class="voucher-info-item">
+                            <div class="voucher-info-label">Passageiros</div>
+                            <div class="voucher-info-value">${totalPassengers}</div>
+                        </div>
+                        <div class="voucher-info-item">
+                            <div class="voucher-info-label">Total</div>
+                            <div class="voucher-info-value">R$ ${(voucher.total_a_pagar || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="voucher-info-item">
+                            <div class="voucher-info-label">Falta Pagar</div>
+                            <div class="voucher-info-value">R$ ${(voucher.falta_pagar || 0).toFixed(2)}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // Mensagens
+            showMessage(message, type = 'success') {
+                const el = document.createElement('div');
+                el.className = `message message-${type}`;
+                el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+                document.body.appendChild(el);
+                setTimeout(() => {
+                    el.style.animation = 'slideOutRight 0.5s ease-in';
+                    setTimeout(() => el.remove(), 500);
+                }, 3000);
+            }
+            showSuccessMessage(message) {
+                this.showMessage(message, 'success');
+            }
+            showErrorMessage(message) {
+                this.showMessage(message, 'error');
+                return false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const voucherSystem = new VoucherSystem();
+        });
+    </script>
+</body>
+
+</html>
+
